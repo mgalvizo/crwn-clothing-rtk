@@ -1,35 +1,48 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
-function App() {
-  const [count, setCount] = useState(0)
+import { Routes, Route } from 'react-router-dom';
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+import {
+    onAuthStateChangedListener,
+    createUserDocumentFromAuth,
+} from './utils/firebase/firebase.utils';
+import Home from './routes/home/home.component';
+import Navigation from './routes/navigation/navigation.component';
+import Authentication from './routes/authentication/authentication.component';
+import Shop from './routes/shop/shop.component';
+import Checkout from './routes/checkout/checkout.component';
+import { setCurrentUser } from './store/user/user.reducer';
 
-export default App
+const App = () => {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChangedListener(user => {
+            if (user) {
+                createUserDocumentFromAuth(user);
+            }
+            const pickedUser =
+                user &&
+                (({ accessToken, email }) => ({ accessToken, email }))(user);
+
+            console.log(setCurrentUser(pickedUser));
+            dispatch(setCurrentUser(pickedUser));
+        });
+
+        return unsubscribe;
+    }, []);
+
+    return (
+        <Routes>
+            <Route path="/" element={<Navigation />}>
+                <Route index element={<Home />} />
+                <Route path="shop/*" element={<Shop />} />
+                <Route path="auth" element={<Authentication />} />
+                <Route path="checkout" element={<Checkout />} />
+            </Route>
+        </Routes>
+    );
+};
+
+export default App;
