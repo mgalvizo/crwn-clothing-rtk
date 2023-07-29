@@ -28,6 +28,7 @@ const middleWares = [process.env.NODE_ENV === 'development' && logger].filter(
 
 export const store = configureStore({
     reducer: rootReducer,
+    // An options object can be passed to getDefaultMiddleware to disable or enable default middleware
     middleware: getDefaultMiddleware =>
         getDefaultMiddleware().concat(middleWares),
 });
